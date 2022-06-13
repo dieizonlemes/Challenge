@@ -1,0 +1,8 @@
+FROM alpine:3.9.6
+
+USER root
+
+RUN apk update
+RUN apk add php7-gd php7-mysqli php7-zlib php7-curl 
+#RUN service php-fpm7 added to runlevel default
+RUN service php-fpm7 start

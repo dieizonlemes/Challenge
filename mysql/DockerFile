@@ -1,0 +1,16 @@
+FROM alpine:3.16
+
+WORKDIR /app
+VOLUME /app
+
+RUN apk add --update mysql mysql-client && rm -f /var/cache/apk/*
+
+# These lines moved to the end allow us to rebuild image quickly after only these files were modified.
+
+COPY mysql_my.cnf /etc/mysql/my.cnf
+COPY mysql_startup.sh /startup.sh
+
+RUN chmod 775 /startup.sh
+
+EXPOSE 3306
+CMD ["/startup.sh"]
