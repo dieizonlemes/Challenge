@@ -1,0 +1,71 @@
+version: '3.3'
+
+# networks:
+#   default:
+#     external:
+#       name: microservices
+
+services:
+
+  nginx:
+    container_name: service_nginx
+    build:
+      context: ./
+      dockerfile: nginx/Dockerfile
+    restart: always
+    ports:
+      - "80"
+    volumes:
+      - ./src:/app
+    depends_on:
+      - wordpress
+    networks:
+      - app-network
+
+  wordpress:
+    depends_on:
+      - mysql
+    image: wordpress:5.1.1-fpm-alpine
+    container_name: wordpress
+    restart: unless-stopped
+    env_file: mysql/.env
+    environment:
+      - WORDPRESS_DB_HOST=mysql:3306
+      - WORDPRESS_DB_USER=service
+      - WORDPRESS_DB_PASSWORD=service
+      - WORDPRESS_DB_NAME=wordpress
+    volumes:
+      - wordpress:/var/www/html
+    networks:
+      - app-network
+
+  mysql:
+    container_name: service_mysql
+    build:
+      context: ./
+      dockerfile: mysql/Dockerfile
+    ports:
+      - "3306"
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: service
+      MYSQL_PASSWORD: service
+      MYSQL_DATABASE: service
+    networks:
+      - app-network
+
+  jenkins:
+    container_name: service_jenkins
+    build:
+      context: ./
+      dockerfile: jenkins/Dockerfile
+    networks:
+    - app-network
+
+networks:
+  app-network:
+    driver: bridge 
+
+volumes:
+  wordpress:
